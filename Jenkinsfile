@@ -6,7 +6,14 @@ pipeline {
         EMAIL_RECIPIENTS = 'k.mendo87@gmail.com'
     }
     stages {
-
+        stage('Preparing') {
+            steps {
+                script {
+                    print 'Preparing build version'
+                    getDevVersion()
+                }
+            }
+        }
         stage('Build with unit testing') {
             steps {
                 // Run the maven build
