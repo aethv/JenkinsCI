@@ -1,16 +1,31 @@
 pipeline {
     // run on jenkins nodes tha has java 8 label
     agent any
+    tools { 
+        maven 'Maven 3.3.9' 
+        jdk 'jdk8' 
+    }
     // global env variables
     environment {
         EMAIL_RECIPIENTS = 'k.mendo87@gmail.com'
     }
     stages {
-        stage('Preparing') {
+        stage ('Initialize') {
             steps {
-                script {
-                    print 'Preparing build version'
-                    getDevVersion()
+                sh '''
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                '''
+            }
+        }
+
+        stage ('Build') {
+            steps {
+                sh 'mvn -Dmaven.test.failure.ignore=true install' 
+            }
+            post {
+                success {
+                    junit 'target/surefire-reports/**/*.xml' 
                 }
             }
         }
