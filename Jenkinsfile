@@ -1,4 +1,6 @@
 pipeline {
+    checkout scm
+    env.PATH = "${tool 'Maven3'}/bin:${env.PATH}"
     agent {
         docker {
             image 'maven:3-alpine'
