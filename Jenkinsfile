@@ -11,10 +11,6 @@ pipeline {
             steps {
                 // Run the maven build
                 script {
-                    // Get the Maven tool.
-                    // ** NOTE: This 'M3' Maven tool must be configured
-                    // **       in the global configuration.
-                    echo 'Pulling...' + env.BRANCH_NAME
                     def mvnHome = tool 'Maven 3.3.9'
                     if (isUnix()) {
                         def targetVersion = getDevVersion()
@@ -28,6 +24,7 @@ pipeline {
                         // execute the unit testing and collect the reports
                         junit '**//*target/surefire-reports/TEST-*.xml'
                         archive 'target*//*.jar'
+                        print 'build success'
                     } else {
                         bat(/"${mvnHome}\bin\mvn" -Dintegration-tests.skip=true clean package/)
                         def pom = readMavenPom file: 'pom.xml'
@@ -37,23 +34,6 @@ pipeline {
                     }
                 }
 
-            }
-        }
-        stage('Integration tests') {
-            // Run integration test
-            steps {
-                script {
-                    def mvnHome = tool 'Maven 3.3.9'
-                    if (isUnix()) {
-                        // just to trigger the integration test without unit testing
-                        sh "'${mvnHome}/bin/mvn'  verify -Dunit-tests.skip=true"
-                    } else {
-                        bat(/"${mvnHome}\bin\mvn" verify -Dunit-tests.skip=true/)
-                    }
-
-                }
-                // cucumber reports collection
-                cucumber buildStatus: null, fileIncludePattern: '**/cucumber.json', jsonReportDirectory: 'target', sortingMethod: 'ALPHABETICAL'
             }
         }
         stage('Sonar scan execution') {
@@ -223,13 +203,13 @@ pipeline {
             deleteDir()
         }
         success {
-            sendEmail("Successful");
+            print 'Successful';
         }
         unstable {
-            sendEmail("Unstable");
+            print 'Unstable';
         }
         failure {
-            sendEmail("Failed");
+            print 'Failed';
         }
     }
 
