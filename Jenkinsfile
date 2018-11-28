@@ -23,15 +23,18 @@ pipeline {
 
         stage ('Build with unit test') {
             steps {
-                def targetVersion = getDevVersion()
-                sh 'mvn -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package' 
-            }
-            post {
-                success {
+                script {
+                    def targetVersion = getDevVersion()
+                    sh 'mvn -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package' 
                     def pom = readMavenPom file: 'pom.xml'
                     // get the current development version 
                     developmentArtifactVersion = "${pom.version}-${targetVersion}"
                     print pom.version
+                }
+            }
+            post {
+                success {
+                    
                     junit 'target/surefire-reports/**/*.xml' 
                     archive 'target*//*.jar'
                 }
